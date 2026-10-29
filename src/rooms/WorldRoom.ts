@@ -1,6 +1,6 @@
 import { Room, Client, CloseCode } from "colyseus";
 import { WorldState, PlayerState } from "./schema/WorldState.js";
-import { DISTANCE_MAX, GUEST_ID_PREFIX, LEADERBOARD_EVERY_MS, NAME_MAX, PFP_MAX_LEN, RECONNECT_SECONDS, ROOM_MAX_CLIENTS } from "../constants.js";
+import { DISTANCE_MAX, GUEST_ID_PREFIX, LEADERBOARD_EVERY_MS, NAME_MAX, PFP_MAX_LEN, RECONNECT_SECONDS, ROOM_MAX_CLIENTS, WAVE_MAX } from "../constants.js";
 import { getPlayers, type PlayerDoc } from "../db.js";
 import { sanitizeProgress } from "../sanitize.js";
 import { applyAvatar, applyLoadout, applyPose } from "../presence.js";
@@ -79,13 +79,16 @@ export class WorldRoom extends Room<{ state: WorldState }> {
       }
     },
     // The sender's ride, relayed through the roster so everyone sees who is on a wave:
-    // { riding, distance (metres this ride) }, a few times a second while riding.
-    ride: (client: Client, msg: { riding?: unknown; distance?: unknown }) => {
+    // { riding, distance (metres this ride), wave (live crest, metres; 0 = no surf wave, e.g. a
+    // wave machine) }, a few times a second while riding.
+    ride: (client: Client, msg: { riding?: unknown; distance?: unknown; wave?: unknown }) => {
       const p = this.state.players.get(client.sessionId);
       if (!p) return;
       p.riding = msg?.riding === true;
       const d = msg?.distance;
       p.distance = p.riding && typeof d === "number" && Number.isFinite(d) ? Math.min(DISTANCE_MAX, Math.max(0, d)) : 0;
+      const w = msg?.wave;
+      p.wave = p.riding && typeof w === "number" && Number.isFinite(w) ? Math.min(WAVE_MAX, Math.max(0, w)) : 0;
     },
     // Presence (presence.ts): the sender's pose ~10x/s, its equipped gear and its Bloxity look,
     // relayed through the roster so everyone draws them in the world (client remotePlayers.js).

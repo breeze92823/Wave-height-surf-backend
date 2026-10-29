@@ -22,6 +22,7 @@ export const RECONNECT_SECONDS = 20;
 export const CURRENCY_MAX = 1e33; // wave height, trophies (Wins), gems
 export const REBIRTHS_MAX = 1e9;
 export const DISTANCE_MAX = 1e9; // personal best ride, metres
+export const WAVE_MAX = 100; // live surf wave crest, metres (client SURF.waveMax * faceScale ~25)
 export const PLAY_SECONDS_MAX = 31_536_000; // ~1 year
 export const LEVEL_MAX = 1000; // client ECONOMY.levelMax is 30
 export const XP_MAX = 1e9;

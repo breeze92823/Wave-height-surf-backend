@@ -9,6 +9,7 @@ export const PlayerState = schema(
     pfp: t.string().default(""), // Bloxity profile picture URL ("" = none)
     riding: t.boolean().default(false), // on a wave right now (`ride` message)
     distance: t.float64().default(0), // this ride's distance so far, metres
+    wave: t.float32().default(0), // live crest height of their surf wave, metres (0 = none), drawn by the others
     // Presence (presence.ts, `pose` / `loadout` / `setAvatar`): what the others draw in the world.
     x: t.float64().default(0), // feet position, metres
     y: t.float64().default(0),

@@ -6,53 +6,64 @@ import { LEADERBOARD_STATS } from "./constants.js";
 // scoped credentials. A local `npm start` normally has no Mongo reachable, so a missing or
 // unreachable URI must degrade to "no persistence" rather than crash the room.
 
-// The persisted client state (what `saveProgress` carries, see sanitize.ts). The client keeps
-// nothing in the browser: this document is the player's only save.
+// The persisted client state (what `saveProgress` carries, see sanitize.ts; mirrors the client's
+// game.js `fresh()`). The client keeps nothing in the browser: this document is the player's only save.
 export interface PlayerDoc {
   _id: string; // Bloxity user id -- see WorldRoom.ts (guests are never saved)
   username?: string; // display name as of the last save
-  trophies?: number; // Wins (the HUD's trophy counter, the shop currency)
+  waveHeight?: number; // Wave Height, built by paddling (reset by a rebirth)
+  trophies?: number; // Wins: the shop currency
   gems?: number;
-  energy?: number; // lightning (rebirth.js), the race speed
   rebirths?: number;
-  autoRebirth?: boolean;
-  bestDistance?: number; // personal best race, studs (only ever goes up)
-  playtime?: number; // s with the game visible
-  boats?: string[]; // owned boat ids (client BOATS.list)
-  boat?: string; // the equipped boat (an owned one)
-  engines?: string[]; // owned engine ids (client engine.js ENGINES)
-  engine?: string; // the equipped engine, "" = none
-  partners?: string[]; // owned partner ids (client PARTNER.partners)
-  partner?: string; // the equipped partner, "" = none
-  trails?: string[]; // owned trail ids (client TRAILS.list)
-  trail?: string; // the equipped trail, "" = none
-  pets?: SavedPet[]; // owned pets (client pets.js), at most PETS_MAX
+  level?: number;
+  xp?: number;
+  swells?: number[]; // purchases per Swell tier (client ECONOMY.swells)
+  boards?: string[]; // owned surfboard ids (client ECONOMY.boards)
+  board?: string; // the equipped board (an owned one)
+  trails?: string[]; // owned trail ids (client ECONOMY.trails)
+  trail?: string; // the equipped trail (an owned one)
+  autoPaddle?: boolean;
+  boostUntil?: { skill: number; wins: number }; // epoch ms the gem boosts run until
+  lastGift?: number; // epoch ms of the last free gift, 0 = ready
+  bestDistance?: number; // personal best ride, metres (only ever goes up)
+  pets?: SavedPet[]; // owned pets (client pets), at most PETS_MAX
   petSlots?: number; // pets equipped at once
-  petStorage?: number; // pets owned at most
-  eggsSeen?: string[]; // pet kinds ever hatched (client eggs.js: the NEW! tag)
-  world?: string; // the world the player was in (client worlds.js WORLDS), "" = the start world
-  worldsUnlocked?: string[]; // worlds whose portal requirement was met once (they stay open)
-  giftTime?: number; // Online Gifts clock, s online this round
-  giftsClaimed?: number[]; // GIFTS.list indexes claimed this round
-  potions?: Record<string, number>; // potion id -> count (gifts.js)
+  petsSeen?: string[]; // pet kinds ever hatched (the NEW! tag)
+  nextPetId?: number;
+  autoDelete?: boolean; // hatched commons are dropped
+  eggs?: Record<string, number>; // reward eggs waiting to open: egg name -> count
+  potions?: SavedPotion[]; // potions in the bag
+  potionOn?: Record<string, { mult: number; until: number } | null>; // running potions by type
+  nextPotionId?: number;
+  playSeconds?: number; // this session's clock (Playtime rewards)
+  playtimeClaimed?: number[]; // indexes of ECONOMY.playtime
+  daily?: { day: number; last: number }; // Daily Reward streak and epoch ms of the last claim
+  quests?: SavedQuests;
+  tutorialStep?: number; // index in the client's TUTORIAL; its length = done or skipped
   lastSeen?: number; // epoch ms of the last activity
-  // Spin wheel (spin.ts): written only by the server's `spin` handler, never by saveProgress.
-  spins?: number; // spins ready to use
-  spinAt?: number; // epoch ms the next free spin arrives
-  // Daily Reward (daily.ts): written by the server only, never by saveProgress.
-  dailyDay?: number; // days unlocked this cycle
-  dailyLast?: number; // UTC day index of the last unlock
-  dailyClaimed?: number[]; // claimed day indexes this cycle
   version: number;
   updatedAt: Date;
 }
 
-// One owned pet: its kind (client PETS.kinds key) and craft tier (index into PETS.tiers).
+// One owned pet: its client-side id, its kind (client PET_KINDS key) and whether it is equipped.
 export interface SavedPet {
+  id: number;
   kind: string;
-  tier: number;
   equipped: boolean;
-  locked: boolean;
+}
+
+export interface SavedPotion {
+  id: number;
+  type: string; // wave | wins | luck
+  mult: number;
+  minutes: number;
+}
+
+export interface SavedQuests {
+  since: number; // epoch ms the current set started
+  progress: Record<string, number>; // quest id -> progress
+  claimed: string[];
+  bonus: boolean;
 }
 
 let client: MongoClient | null = null;

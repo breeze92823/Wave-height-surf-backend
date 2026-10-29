@@ -1,5 +1,6 @@
 name: Deploy to Bloxity Legion
 
+# Tests run on every PR and push; only pushes (and manual runs) build the image and deploy.
 on:
   push:
     branches: [dev, main]
@@ -11,8 +12,12 @@ env:
   REGISTRY: ghcr.io
   # Repo variable, set under Settings -> Secrets and variables -> Actions -> Variables.
   # Must match the lowercase game ID created on the Bloxity "My Games" dashboard
-  # (the client's GAME_SLUG in src/config.js: boat-race-with-99-engine).
+  # (the client's GAME_SLUG in src/config.js: wave-height-surf).
   GAME_ID: ${{ vars.LEGION_GAME_ID || secrets.LEGION_GAME_ID }}
+
+concurrency:
+  group: deploy-${{ github.event_name }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
 
 jobs:
   test:
@@ -28,6 +33,15 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npm test
+
+      # Legion reads the room size from here, so a bad value must fail CI, not the deploy.
+      - name: Check ROOM_MAX_CLIENTS
+        run: |
+          ROOM_SIZE=$(grep -oP 'ROOM_MAX_CLIENTS\s*=\s*\K\d+' src/constants.ts)
+          if [ -z "${ROOM_SIZE}" ] || [ "${ROOM_SIZE}" -lt 2 ] || [ "${ROOM_SIZE}" -gt 100 ]; then
+            echo "::error::ROOM_MAX_CLIENTS must be 2-100 in src/constants.ts (got '${ROOM_SIZE}')."
+            exit 1
+          fi
 
   deploy:
     # Pull requests only run the tests above; deploys happen on push / manual run.

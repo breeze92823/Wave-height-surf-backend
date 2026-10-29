@@ -6,21 +6,19 @@ export const PlayerState = schema(
   {
     username: t.string().default(""), // client-reported Bloxity displayName/username, not validated
     signedIn: t.boolean().default(false), // has a Bloxity id: only signed-in players are saved
-    pfp: t.string().default(""), // Bloxity profile picture URL ("" = none), for the others' racer heads
-    racing: t.boolean().default(false), // in a race right now (`race` message)
-    distance: t.float64().default(0), // this race's distance so far, studs
+    pfp: t.string().default(""), // Bloxity profile picture URL ("" = none)
+    riding: t.boolean().default(false), // on a wave right now (`ride` message)
+    distance: t.float64().default(0), // this ride's distance so far, metres
     // Presence (presence.ts, `pose` / `loadout` / `setAvatar`): what the others draw in the world.
-    x: t.float64().default(0), // feet position in track coordinates (z minus the race scroll)
+    x: t.float64().default(0), // feet position, metres
     y: t.float64().default(0),
     z: t.float64().default(0),
-    yaw: t.float32().default(0), // heading, rad (PI = facing the gate)
-    speed: t.float32().default(0), // m/s, for flames and dead reckoning
-    boat: t.string().default(""), // equipped catalog ids (client config.js), "" = none / default
-    engine: t.string().default(""),
+    yaw: t.float32().default(0), // heading, rad (PI = facing north, -Z)
+    speed: t.float32().default(0), // m/s, for spray and dead reckoning
+    board: t.string().default(""), // equipped catalog ids (client config.js), "" = none / default
     trail: t.string().default(""),
-    partner: t.string().default(""),
-    pets: t.string().default(""), // equipped pets "kind:tier,kind:tier"
-    world: t.string().default(""), // the world the player is in (client WORLDS id), "" = the start world
+    pets: t.string().default(""), // equipped pet kinds "chick,crab"
+    world: t.string().default(""), // the world the player is in, "" = the start world
     avatar: t.string().default(""), // Bloxity look JSON { equipped, proportions, skin }, "" = default
   },
   "PlayerState",

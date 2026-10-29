@@ -146,6 +146,7 @@ export function sanitizeProgress(raw: unknown): Partial<PlayerDoc> | null {
   if (finite(raw.petSlots)) out.petSlots = clampInt(raw.petSlots, PET_SLOTS_MAX, 1);
   if (raw.pets !== undefined) out.pets = sanitizePets(raw.pets, out.petSlots ?? PET_SLOTS_MAX);
   if (raw.petsSeen !== undefined) out.petsSeen = sanitizeIds(raw.petsSeen);
+  if (raw.worlds !== undefined) out.worlds = sanitizeIds(raw.worlds);
   if (finite(raw.nextPetId)) out.nextPetId = clampInt(raw.nextPetId, PET_ID_MAX, 1);
   if (raw.eggs !== undefined) out.eggs = sanitizeEggs(raw.eggs);
 

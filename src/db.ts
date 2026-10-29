@@ -22,6 +22,7 @@ export interface PlayerDoc {
   board?: string; // the equipped board (an owned one)
   trails?: string[]; // owned trail ids (client ECONOMY.trails)
   trail?: string; // the equipped trail (an owned one)
+  worlds?: string[]; // worlds visited through the portal (client CANDY.id)
   autoPaddle?: boolean;
   boostUntil?: { skill: number; wins: number }; // epoch ms the gem boosts run until
   lastGift?: number; // epoch ms of the last free gift, 0 = ready
